@@ -1,0 +1,38 @@
+<div>
+    <h2>
+        Create a New Ticket
+    </h2>
+
+    <form action="rest/ticket/" method="post">
+        <p> Created At: </p>
+        <input type="datetime-local" id="created_at" name="created_at"><br>
+        
+        <p> Subject: </p>
+        <input type="text" id="subject" name="subject" size="50"><br>
+
+        <p> Select Priority: </p>
+        <input type="radio" id="high" name="priority" value="high">
+        <label for="high"> high </label><br>
+        <input type="radio" id="medium" name="priority" value="medium">
+        <label for="medium"> medium </label><br>
+        <input type="radio" id="low" name="priority" value="low">
+        <label for="low"> low </label>
+
+        <p> Select Status: </p>
+        <input type="radio" id="open" name="status" value="open">
+        <label for="open"> open </label><br>
+        <input type="radio" id="closed" name="status" value="closed">
+        <label for="closed"> closed </label><br>
+
+        <p> Recipient: </p>
+        <input type="email" id="recipient" name="recipient"><br>
+
+        <p> Submitter: </p>
+        <input type="email" id="submitter" name="submitter"><br>
+
+        <p> Assignee Id: </p>
+        <input type="number" id="assignee_id" name="assignee_id"><br><br>
+
+        <input type="submit" value="Submit">
+    </form>
+</div>

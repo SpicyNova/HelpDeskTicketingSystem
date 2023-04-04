@@ -48,9 +48,9 @@ function findId(data, id){
 }
 
 /* Create & Read */
-// app.post('rest/ticket/', function(req, res){
-
-// });
+app.post('/rest/ticket/', function(req, res){
+    res.send("Endpoint to create a new ticket")
+});
 
 app.get('/rest/list/', function(req, res) {
     res.json(tickets)
