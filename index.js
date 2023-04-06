@@ -1,5 +1,9 @@
 var express = require('express');
 var app = express();
+var bodyparser = require('body-parser');
+
+app.use(bodyparser.json());
+app.use(bodyparser.urlencoded({ extended: false }));
 
 /* Sample Tickets */
 var tickets = {
@@ -48,8 +52,12 @@ function findId(data, id){
 }
 
 /* Create & Read */
+app.get('/rest/', function(req, res){
+    res.sendFile(__dirname + '/ticketCreationForm.html');
+});
 app.post('/rest/ticket/', function(req, res){
-    res.send("Endpoint to create a new ticket")
+    tickets.tickets.push(req.body);
+    res.sendStatus(201)
 });
 
 app.get('/rest/list/', function(req, res) {
