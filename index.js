@@ -9,7 +9,7 @@ app.use(bodyparser.urlencoded({ extended: false }));
 var tickets = {
     "tickets": [
         {
-            "id": 01,
+            "id": 1,
             "created_at": "2023-04-01T22:55:29Z",
             "subject": "MFP not working right",
             "priority": "med",
@@ -19,7 +19,7 @@ var tickets = {
             "assignee_id": 12345
         },
         {
-            "id": 02,
+            "id": 2,
             "created_at": "2023-03-20T22:55:29Z",
             "subject": "Computer not turning on",
             "priority": "high",
@@ -29,7 +29,7 @@ var tickets = {
             "assignee_id": 12345
         },
         {
-            "id": 03,
+            "id": 3,
             "created_at": "2023-04-01T22:55:29Z",
             "subject": "Computer won't connect to wifi",
             "priority": "low",
