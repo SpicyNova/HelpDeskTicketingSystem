@@ -1,71 +1,141 @@
 var express = require('express');
 var app = express();
 var bodyparser = require('body-parser');
+const { MongoClient } = require("mongodb");
 
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: false }));
+const uri = "mongodb+srv://classuser:yJXu8rpMrJRehw9r@aombd.d87vii9.mongodb.net/?retryWrites=true&w=majority";
 
-/* Sample Tickets */
-var tickets = {
-    "tickets": [
-        {
-            "id": 1,
-            "created_at": "2023-04-01T22:55:29Z",
-            "subject": "MFP not working right",
-            "priority": "med",
-            "status": "open",
-            "recipient": "support_example@selu.edu",
-            "submitter": "Michael_bolton@selu.edu",
-            "assignee_id": 12345
-        },
-        {
-            "id": 2,
-            "created_at": "2023-03-20T22:55:29Z",
-            "subject": "Computer not turning on",
-            "priority": "high",
-            "status": "closed",
-            "recipient": "support_example@selu.edu",
-            "submitter": "jane_doe@selu.edu",
-            "assignee_id": 12345
-        },
-        {
-            "id": 3,
-            "created_at": "2023-04-01T22:55:29Z",
-            "subject": "Computer won't connect to wifi",
-            "priority": "low",
-            "status": "open",
-            "recipient": "support_example@selu.edu",
-            "submitter": "john_doe@selu.edu",
-            "assignee_id": 67891
-        }   
-    ]
-}
+/* get all tickets */
+app.get('/rest/list/', function(req, res) {
+    const client = new MongoClient(uri);
+    
+    async function run() {
+      try {
+        const database = client.db('aombd');
+        const tickets = database.collection('HelpDeskTicketingSystem');
 
-/* Find By Id */
-function findId(data, id){
-    for(var i = 0; i < data.length; i++){
-        if(data[i].id == id){
-            return data[i]
-        }
+        var ticket = await tickets.find({}).toArray();
+        console.log(ticket);
+        res.send('Found this: ' + JSON.stringify(ticket));
+
+    
+      } finally {
+        await client.close();
+      }
     }
-    return `Ticket ${id} Does Not Exist`
-}
 
-/* Create & Read */
-app.get('/rest/', function(req, res){
+    run().catch(console.dir);
+
+});
+
+/* get ticket by id */
+app.get('/rest/ticket/:id', function(req, res) {
+    const client = new MongoClient(uri);
+    const searchKey = "{ id: '" + req.params.id + "' }";
+    console.log("Looking for: " + searchKey);
+    
+    async function run() {
+      try {
+        const database = client.db('aombd');
+        const tickets = database.collection('HelpDeskTicketingSystem');
+        const query = { ticketId: parseInt(req.params.id) };
+        
+        const ticket = await tickets.findOne(query);
+        console.log(ticket);
+        res.send('Found this: ' + JSON.stringify(ticket));
+    
+      } finally {
+        await client.close();
+      }
+    }
+
+    run().catch(console.dir);
+
+});
+
+/* create tickets */
+app.get('/rest/', function(req, res) {
     res.sendFile(__dirname + '/ticketCreationForm.html');
 });
-app.post('/rest/ticket/', function(req, res){
-    tickets.tickets.push(req.body);
-    res.sendStatus(201)
+app.post('/rest/ticket/', function(req, res) {
+    const client = new MongoClient(uri);
+    var ticket = req.body;
+    ticket.ticketId = parseInt(ticket.ticketId);
+
+    async function run() {
+      try {
+        const database = client.db('aombd');
+        const tickets = database.collection('HelpDeskTicketingSystem');
+
+        tickets.insertOne(ticket);
+        console.log(ticket);
+        res.sendStatus(200);
+    
+      } finally {
+        await client.close();
+      }
+    }
+
+    run().catch(console.dir);
+
 });
 
-app.get('/rest/list/', function(req, res) {
-    res.json(tickets)
+/* updating a ticket */
+app.get('/rest/ticket/update/:id', function(req, res) {
+    res.sendFile(__dirname + '/ticketUpdateForm.html');
+});
+app.put('/rest/ticket/:id', function(req, res) {
+    const client = new MongoClient(uri);
+    
+    async function run() {
+      try {
+        const database = client.db('aombd');
+        const tickets = database.collection('HelpDeskTicketingSystem');
+
+        // const query = { ticketId: parseInt(req.params.id) };
+        console.log(req.params.id)
+
+        // const newValues = { $set: { subject: req.body.subject, 
+        //                             priority: req.body.priority, 
+        //                             status: req.body.status,
+        //                             assignee_id: req.body.assignee_id } };
+        
+        // tickets.updateOne(query, newValues);
+
+        // console.log(newValues);
+        // res.send(JSON.stringify(tickets.findOne(query)));
+    
+      } finally {
+        await client.close();
+      }
+    }
+
+    run().catch(console.dir);
+
 });
 
-app.get('/rest/ticket/:id', function(req, res){
-    res.json(findId(tickets['tickets'], req.params.id))
+/* delete a ticket */
+app.delete('/rest/ticket/:id', function(req, res) {
+    const client = new MongoClient(uri);
+    
+    async function run() {
+      try {
+        const database = client.db('aombd');
+        const tickets = database.collection('HelpDeskTicketingSystem');
+        
+        tickets.deleteOne({ticketId: parseInt(req.params.id)});
+
+        res.send("Ticket Deleted");
+    
+      } finally {
+        await client.close();
+      }
+    }
+
+    run().catch(console.dir);
+
 });
 
 app.listen(3000);
