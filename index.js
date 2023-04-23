@@ -94,18 +94,22 @@ app.put('/rest/ticket/:id', function(req, res) {
         const database = client.db('aombd');
         const tickets = database.collection('HelpDeskTicketingSystem');
 
-        // const query = { ticketId: parseInt(req.params.id) };
+        const query = { ticketId: parseInt(req.params.id) };
         console.log(req.params.id)
 
-        // const newValues = { $set: { subject: req.body.subject, 
-        //                             priority: req.body.priority, 
-        //                             status: req.body.status,
-        //                             assignee_id: req.body.assignee_id } };
+        const newValues = { $set: { subject: req.body.subject, 
+                                    priority: req.body.priority, 
+                                    status: req.body.status,
+                                    assignee_id: req.body.assignee_id } };
         
-        // tickets.updateOne(query, newValues);
+        tickets.updateOne(query, newValues, function(err, res) {
+          if (err) throw err;
+          console.log("1 document updated");
+          db.close();
+        });
 
-        // console.log(newValues);
-        // res.send(JSON.stringify(tickets.findOne(query)));
+        console.log(newValues);
+        res.send(JSON.stringify(tickets.findOne(query)));
     
       } finally {
         await client.close();
@@ -125,7 +129,7 @@ app.delete('/rest/ticket/:id', function(req, res) {
         const database = client.db('aombd');
         const tickets = database.collection('HelpDeskTicketingSystem');
         
-        tickets.deleteOne({ticketId: parseInt(req.params.id)});
+        await tickets.deleteOne({ticketId: parseInt(req.params.id)});
 
         res.send("Ticket Deleted");
     
