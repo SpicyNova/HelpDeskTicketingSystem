@@ -83,7 +83,7 @@ app.post('/rest/ticket/', function(req, res) {
 });
 
 /* updating a ticket */
-app.get('/rest/ticket/update/:id', function(req, res) {
+app.get('/rest/update', function(req, res) {
     res.sendFile(__dirname + '/ticketUpdateForm.html');
 });
 app.put('/rest/ticket/:id', function(req, res) {
