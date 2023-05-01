@@ -3,12 +3,12 @@
         Update Ticket
     </h2>
 
-    <form action="/rest/ticket/update" method="post">
-        <!-- <p> Ticket Id: </p>
-        <input type="number" id="ticketId" name="ticketId"><br><br> -->
+    <form action="/rest/ticket/put" method="post">
+        <p> Ticket Id: </p>
+        <input type="number" id="ticketId" name="ticketId"><br><br>
 
-        <!-- <p> Created At: </p>
-        <input type="datetime-local" id="created_at" name="created_at"><br> -->
+        <p> Created At: </p>
+        <input type="datetime-local" id="created_at" name="created_at"><br>
         
         <p> Subject: </p>
         <input type="text" id="subject" name="subject" size="50"><br>
@@ -27,11 +27,11 @@
         <input type="radio" id="closed" name="status" value="closed">
         <label for="closed"> closed </label><br>
 
-        <!-- <p> Recipient: </p>
+        <p> Recipient: </p>
         <input type="email" id="recipient" name="recipient"><br>
 
         <p> Submitter: </p>
-        <input type="email" id="submitter" name="submitter"><br> -->
+        <input type="email" id="submitter" name="submitter"><br>
 
         <p> Assignee Id: </p>
         <input type="number" id="assignee_id" name="assignee_id"><br><br>

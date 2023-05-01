@@ -1,4 +1,5 @@
 var express = require('express');
+var js2xmlparser = require("js2xmlparser");
 var app = express();
 var bodyparser = require('body-parser');
 const { MongoClient } = require("mongodb");
@@ -6,6 +7,10 @@ const { MongoClient } = require("mongodb");
 app.use(bodyparser.json());
 app.use(bodyparser.urlencoded({ extended: false }));
 const uri = "mongodb+srv://classuser:yJXu8rpMrJRehw9r@aombd.d87vii9.mongodb.net/?retryWrites=true&w=majority";
+
+function translate(ticket) {
+  return js2xmlparser.parse("Ticket", ticket)
+};
 
 /* get all tickets */
 app.get('/rest/list/', function(req, res) {
@@ -30,21 +35,17 @@ app.get('/rest/list/', function(req, res) {
 
 });
 
-/* get ticket by id */
+/* get ticket by id JSON */
 app.get('/rest/ticket/:id', function(req, res) {
     const client = new MongoClient(uri);
-    const searchKey = "{ id: '" + req.params.id + "' }";
-    console.log("Looking for: " + searchKey);
     
     async function run() {
       try {
         const database = client.db('aombd');
         const tickets = database.collection('HelpDeskTicketingSystem');
-        const query = { ticketId: parseInt(req.params.id) };
         
-        const ticket = await tickets.findOne(query);
-        console.log(ticket);
-        res.send('Found this: ' + JSON.stringify(ticket));
+        const ticket = await tickets.findOne({ ticketId: parseInt(req.params.id) });
+        res.send(JSON.stringify(ticket));
     
       } finally {
         await client.close();
@@ -55,11 +56,68 @@ app.get('/rest/ticket/:id', function(req, res) {
 
 });
 
+/* get ticket by id XML */
+app.get('/rest/xml/ticket/:id', function(req, res) {
+  const client = new MongoClient(uri);
+  
+  async function run() {
+    try {
+      const database = client.db('aombd');
+      const tickets = database.collection('HelpDeskTicketingSystem');
+
+      const ticket = await tickets.findOne({ ticketId: parseInt(req.params.id) });
+
+      var ticketParser = {ticketId: ticket.ticketId,
+                          created_at: ticket.created_at,
+                          subject: ticket.subject, 
+                          priority: ticket.priority, 
+                          status: ticket.status,
+                          recipient: ticket.recipient,
+                          submitter: ticket.submitter,
+                          assignee_id: ticket.assignee_id};
+      
+      res.send(translate(ticketParser));
+
+    } finally {
+      await client.close();
+    }
+  }
+
+  run().catch(console.dir);
+
+});
+
+/* delete a ticket */
+app.get('/rest/delete', function(req, res) {
+  res.sendFile(__dirname + '/ticketDeleteForm.html');
+});
+app.post('/rest/ticket/delete', function(req, res) {
+  const client = new MongoClient(uri);
+  
+  async function run() {
+    try {
+      const database = client.db('aombd');
+      const tickets = database.collection('HelpDeskTicketingSystem');
+      
+      console.log(req.body.ticketId); 
+      const deleteTicket = await tickets.findOneAndDelete({ticketId: parseInt(req.body.ticketId)});
+
+      res.send("Ticket Deleted").status(200);
+  
+    } finally {
+      await client.close();
+    }
+  }
+
+  run().catch(console.dir);
+
+});
+
 /* create tickets */
-app.get('/rest/', function(req, res) {
+app.get('/rest/post', function(req, res) {
     res.sendFile(__dirname + '/ticketCreationForm.html');
 });
-app.post('/rest/ticket/', function(req, res) {
+app.post('/rest/ticket/post', function(req, res) {
     const client = new MongoClient(uri);
     var ticket = req.body;
     ticket.ticketId = parseInt(ticket.ticketId);
@@ -83,45 +141,10 @@ app.post('/rest/ticket/', function(req, res) {
 });
 
 /* updating a ticket */
-app.get('/rest/update', function(req, res) {
+app.get('/rest/put', function(req, res) {
     res.sendFile(__dirname + '/ticketUpdateForm.html');
 });
-app.put('/rest/ticket/:id', function(req, res) {
-    const client = new MongoClient(uri);
-    
-    async function run() {
-      try {
-        const database = client.db('aombd');
-        const tickets = database.collection('HelpDeskTicketingSystem');
-
-        const query = { ticketId: parseInt(req.params.id) };
-        console.log(req.params.id)
-
-        const newValues = { $set: { subject: req.body.subject, 
-                                    priority: req.body.priority, 
-                                    status: req.body.status,
-                                    assignee_id: req.body.assignee_id } };
-        
-        tickets.updateOne(query, newValues, function(err, res) {
-          if (err) throw err;
-          console.log("1 document updated");
-          db.close();
-        });
-
-        console.log(newValues);
-        res.send(JSON.stringify(tickets.findOne(query)));
-    
-      } finally {
-        await client.close();
-      }
-    }
-
-    run().catch(console.dir);
-
-});
-
-/* delete a ticket */
-app.delete('/rest/ticket/:id', function(req, res) {
+app.post('/rest/ticket/put', function(req, res) {
     const client = new MongoClient(uri);
     
     async function run() {
@@ -129,10 +152,21 @@ app.delete('/rest/ticket/:id', function(req, res) {
         const database = client.db('aombd');
         const tickets = database.collection('HelpDeskTicketingSystem');
         
-        await tickets.deleteOne({ticketId: parseInt(req.params.id)});
+        const ticketId = parseInt(req.body.ticketId);
 
-        res.send("Ticket Deleted");
-    
+        const ticket = {ticketId: parseInt(req.body.ticketId),
+                        created_at: req.body.created_at,
+                        subject: req.body.subject, 
+                        priority: req.body.priority, 
+                        status: req.body.status,
+                        recipient: req.body.recipient,
+                        submitter: req.body.submitter,
+                        assignee_id: req.body.assignee_id};
+
+        const updateTicket = await tickets.findOneAndUpdate({ ticketId: ticketId }, { $set: ticket });
+
+        res.send("Ticket Updated").status(200);
+
       } finally {
         await client.close();
       }
